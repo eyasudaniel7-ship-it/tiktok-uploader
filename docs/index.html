@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lubanja – TikTok Content Manager</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #222; line-height: 1.7; }
+    header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 60px 20px; text-align: center; }
+    header h1 { font-size: 2.4rem; margin-bottom: 8px; letter-spacing: -0.5px; }
+    header p { font-size: 1.1rem; opacity: .85; max-width: 560px; margin: 0 auto; }
+    .container { max-width: 780px; margin: 0 auto; padding: 40px 20px; }
+    section { margin-bottom: 48px; }
+    h2 { font-size: 1.5rem; margin-bottom: 16px; color: #1a1a2e; }
+    p, li { color: #444; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 20px; }
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .feature { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .feature h3 { font-size: 1.05rem; margin-bottom: 6px; color: #1a1a2e; }
+    .feature p { font-size: .93rem; }
+    .btn { display: inline-block; background: #1a1a2e; color: #fff; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 500; }
+    .btn:hover { background: #16213e; }
+    .links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+    .links a { color: #1a1a2e; font-weight: 500; text-decoration: underline; }
+    footer { text-align: center; padding: 32px 20px; font-size: .85rem; color: #888; border-top: 1px solid #e9ecef; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.8rem; }
+      .features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Lubanja</h1>
+  <p>Bulk upload TikTok content with AI-powered captions — review, approve, and send drafts from your browser.</p>
+</header>
+
+<div class="container">
+
+  <section class="card">
+    <h2>About</h2>
+    <p>Lubanja is a web tool for content creators and businesses who manage multiple TikTok posts. Upload images and videos, generate sales-optimized captions with AI, and send everything to your TikTok inbox as drafts — all in batches.</p>
+  </section>
+
+  <section>
+    <h2>Key Features</h2>
+    <div class="features">
+      <div class="feature">
+        <h3>Batch Upload</h3>
+        <p>Upload multiple videos and images at once. Review them side-by-side before sending to TikTok.</p>
+      </div>
+      <div class="feature">
+        <h3>AI Captions</h3>
+        <p>Automatically generate captions and hashtags using Google Gemini. Optimized for sales and TikTok SEO.</p>
+      </div>
+      <div class="feature">
+        <h3>Visual Recognition</h3>
+        <p>Gemini analyses each product image to write accurate, specific descriptions.</p>
+      </div>
+      <div class="feature">
+        <h3>Draft to Inbox</h3>
+        <p>Uploaded content lands in your TikTok inbox as drafts — review and publish from the TikTok app.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Policies</h2>
+    <p>Please review our policies below:</p>
+    <div class="links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Contact</h2>
+    <p>For questions or support, reach out at <a href="mailto:eyasudaniel7-ship-it@users.noreply.github.com">eyasudaniel7-ship-it@users.noreply.github.com</a>.</p>
+  </section>
+
+</div>
+
+<footer>
+  &copy; <span id="year"></span> Lubanja. All rights reserved.
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
