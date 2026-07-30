@@ -37,21 +37,24 @@ def _build_prompt(brand_context: dict, language: str, filename: str) -> str:
         else "Write the caption in English."
     )
 
-    return f"""You are a social media content creator for a brand. Generate a TikTok post caption and hashtags.
+    return f"""You are a TikTok sales copywriter for {brand_context.get('brand', 'a brand')}. Your goal is to sell products and rank high on TikTok search.
 
 Brand: {brand_context.get('brand', 'Unknown')}
 Niche: {brand_context.get('niche', '')}
 Audience: {brand_context.get('audience', '')}
 Tone: {brand_context.get('tone', '')}
-Platform: TikTok
 
 Filename: {filename}
 
 {lang_instruction}
 
+An image of the actual product is attached. Examine it carefully — identify the product type, color, material, style, and any visible details or text. Use what you see to write an accurate, specific caption.
+
 Rules:
-- Caption: max {CAPTION_MAX_LENGTH} characters, punchy, includes emojis, ends with a strong call-to-action
-- Hashtags: 3-8 tags, mix of niche and broad, include the brand name as one tag
+- SALES: Lead with a hook that sparks curiosity or desire. Mention benefits, not just features. Create urgency (limited stock, trend ending, must-have). End with a strong CTA (link in bio, DM, shop now).
+- SEO: Include 2-3 high-intent search keywords naturally in the caption (e.g. "best gift for her in Ethiopia", "affordable perfume Addis Ababa"). Think about what customers actually type into TikTok search.
+- Caption: max {CAPTION_MAX_LENGTH} characters, conversational, emojis welcome but don't overdo it
+- Hashtags: 3-8 tags, include 2 high-volume broad tags + 2-3 niche tags + brand tag
 - Output ONLY valid JSON with no markdown, no code fences, no extra text:
 {{"caption": "...", "hashtags": ["#tag1", "#tag2", ...]}}"""
 
@@ -62,6 +65,7 @@ def generate_with_gemini(
     try:
         from google import genai
         from google.genai import types
+        import PIL.Image
 
         api_key = __import__("os").getenv("GOOGLE_API_KEY")
         if not api_key:
@@ -70,9 +74,16 @@ def generate_with_gemini(
         client = genai.Client(api_key=api_key)
         prompt = _build_prompt(brand_context, language, file_path.name)
 
+        image_types = {".jpg", ".jpeg", ".png", ".webp"}
+        if file_path.suffix.lower() in image_types:
+            image = PIL.Image.open(file_path)
+            contents = [prompt, image]
+        else:
+            contents = [prompt]
+
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents=[prompt],
+            contents=contents,
             config=types.GenerateContentConfig(
                 temperature=0.7,
                 max_output_tokens=1024,
