@@ -74,15 +74,17 @@ def _render_review_batch(items: list[ContentItem]):
     if needs_gen:
         if st.button("Generate AI Captions for This Batch", type="primary"):
             account = ACCOUNTS[wf["account_name"]]
-            with st.spinner("Generating captions..."):
-                for item in needs_gen:
-                    meta = generate_metadata(
-                        item.file_path,
-                        account.brand_context,
-                        language=item.language,
-                        provider=wf["provider"],
-                    )
-                    wf["metadata_map"][item.filename] = meta
+            progress_text = st.empty()
+            for idx, item in enumerate(needs_gen):
+                progress_text.info(f"Generating caption {idx + 1}/{len(needs_gen)}: {item.filename}")
+                meta = generate_metadata(
+                    item.file_path,
+                    account.brand_context,
+                    language=item.language,
+                    provider=wf["provider"],
+                )
+                wf["metadata_map"][item.filename] = meta
+            progress_text.success(f"Done — {len(needs_gen)} captions generated.")
             st.rerun()
 
     for i, item in enumerate(batch):

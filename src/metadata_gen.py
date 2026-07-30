@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Optional
@@ -62,39 +63,54 @@ Rules:
 def generate_with_gemini(
     file_path: Path, brand_context: dict, language: str
 ) -> Metadata:
-    try:
-        from google import genai
-        from google.genai import types
-        import PIL.Image
+    from google import genai
+    from google.genai import types
+    import PIL.Image
 
-        api_key = __import__("os").getenv("GOOGLE_API_KEY")
-        if not api_key:
-            return _fallback_metadata(file_path, language)
-
-        client = genai.Client(api_key=api_key)
-        prompt = _build_prompt(brand_context, language, file_path.name)
-
-        image_types = {".jpg", ".jpeg", ".png", ".webp"}
-        if file_path.suffix.lower() in image_types:
-            image = PIL.Image.open(file_path)
-            contents = [prompt, image]
-        else:
-            contents = [prompt]
-
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=contents,
-            config=types.GenerateContentConfig(
-                temperature=0.7,
-                max_output_tokens=1024,
-            ),
-        )
-
-        return _parse_response(response.text, file_path, language)
-
-    except Exception as e:
-        logger.warning("Gemini generation failed: %s — using fallback", e)
+    api_key = __import__("os").getenv("GOOGLE_API_KEY")
+    if not api_key:
         return _fallback_metadata(file_path, language)
+
+    client = genai.Client(api_key=api_key)
+    prompt = _build_prompt(brand_context, language, file_path.name)
+
+    image_types = {".jpg", ".jpeg", ".png", ".webp"}
+    if file_path.suffix.lower() in image_types:
+        image = PIL.Image.open(file_path)
+        contents = [prompt, image]
+    else:
+        contents = [prompt]
+
+    model = "gemini-2.0-flash-lite"
+
+    last_error = None
+    for attempt in range(4):
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    temperature=0.7,
+                    max_output_tokens=1024,
+                ),
+            )
+            return _parse_response(response.text, file_path, language)
+
+        except Exception as e:
+            err_str = str(e)
+            last_error = e
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                wait = 2 ** attempt * 5
+                logger.warning("Gemini rate limited (attempt %d/4) — retrying in %ds", attempt + 1, wait)
+                time.sleep(wait)
+            elif attempt < 3:
+                logger.warning("Gemini error (attempt %d/4): %s — retrying", attempt + 1, e)
+                time.sleep(2)
+            else:
+                break
+
+    logger.warning("Gemini generation failed after retries: %s — using fallback", last_error)
+    return _fallback_metadata(file_path, language)
 
 
 def generate_with_openai(
