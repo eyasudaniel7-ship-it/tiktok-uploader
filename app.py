@@ -1,5 +1,6 @@
 import json
 import logging
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -12,7 +13,6 @@ from src.config import (
     DEFAULT_PROVIDER,
     API_MODE,
     BATCH_SIZE,
-    get_active_account,
 )
 from src.auth import TikTokAuth
 from src.uploader import TikTokUploader
@@ -22,15 +22,21 @@ from src.scanner import scan_content, ContentItem
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="tiktok_uploads_"))
 
-def _run_scan(folder_path: str):
-    folder = Path(folder_path)
-    if not folder.exists():
-        st.error(f"Folder not found: {folder}")
-        return
 
+def _save_uploaded_files(uploaded_files: list) -> int:
+    saved = 0
+    for f in uploaded_files:
+        dest = UPLOAD_DIR / f.name
+        dest.write_bytes(f.getbuffer())
+        saved += 1
+    return saved
+
+
+def _run_scan():
     account = ACCOUNTS[get_wf()["account_name"]]
-    items = scan_content(folder, account)
+    items = scan_content(UPLOAD_DIR, account)
 
     wf = get_wf()
     wf["scanned_items"] = items
@@ -264,15 +270,19 @@ with st.sidebar:
 
     st.info(f"API Mode: **{API_MODE.upper()}**")
 
-    folder_path = st.text_input(
-        "Content folder",
-        value=str(get_active_account().content_folder),
+    uploaded_files = st.file_uploader(
+        "Upload images/videos",
+        type=["mp4", "mov", "jpg", "jpeg", "png", "webp"],
+        accept_multiple_files=True,
+        label_visibility="collapsed",
     )
+    if uploaded_files:
+        count = _save_uploaded_files(uploaded_files)
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Scan Folder", use_container_width=True):
-            _run_scan(folder_path)
+        if st.button("Scan Uploads", use_container_width=True):
+            _run_scan()
     with col2:
         if st.button("Reset All", use_container_width=True):
             st.session_state.workflow = {
@@ -303,7 +313,7 @@ with tab1:
         if wf["scanned_items"]:
             st.warning("All content has already been uploaded or skipped.")
         else:
-            st.info("Click **Scan Folder** to find content files.")
+            st.info("Upload files in the sidebar and click **Scan Uploads**.")
     else:
         if skipped_items:
             with st.expander(f"Skipped ({len(skipped_items)} files)"):
